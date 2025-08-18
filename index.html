@@ -140,6 +140,13 @@ function toJSTDateFromLocalInputs(dateStr, timeStr, tzKey){
   return new Date(msJST);
 }
 
+
+function startOfDayJST(d){
+  // 与えられた JST ベース Date の「その日の 00:00（JST）」を返す
+  // 本ファイルでは getUTC*() が JST の暦情報を返す運用のため、+9h を付与
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0) + 9*60*60*1000);
+}
+
 function jdnFromYMD(y,m,d){
   const a = Math.floor((14 - m) / 12);
   const y2 = y + 4800 - a;
@@ -344,6 +351,8 @@ function calc(){
   const monthStem = mInfo.stem, monthBranch = mInfo.branch;
   const mbound = mInfo.boundary || dJST; // fallback
 
+  
+  const mboundDay = startOfDayJST(mbound); // 蔵干は日にちベース（節入り時刻は無視）
   const hg = hourGanzhiByTable(dJST, dayStem);
   const hStem = hg.stem, hBranch = hg.branch;
 
@@ -352,10 +361,10 @@ function calc(){
   const tenDay   = tenGod(dayStem, dayStem);
   const tenHour  = tenGod(dayStem, hStem);
 
-  const zYear  = zMainByTable(yearBranch,  dJST, mbound);
-  const zMonth = zMainByTable(monthBranch, dJST, mbound);
-  const zDay   = zMainByTable(dayBranch,   dJST, mbound);
-  const zHour  = zMainByTable(hBranch,     dJST, mbound);
+  const zYear  = zMainByTable(yearBranch,  dJST, mboundDay);
+  const zMonth = zMainByTable(monthBranch, dJST, mboundDay);
+  const zDay   = zMainByTable(dayBranch,   dJST, mboundDay);
+  const zHour  = zMainByTable(hBranch,     dJST, mboundDay);
 
   const out = {
     year:  {stem:yearStem,  branch:yearBranch,  ten:tenYear,
